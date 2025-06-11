@@ -19,11 +19,11 @@ npm install express cors body-parser mysql jsonwebtoken bcrypt
 
 npm install dotenv
 
-# uzsac savu sql 
+# uzsac savu sql ar 
 
-ar node index.js
--------------------------------------------------------------------------------------------------
-# atver jaunu terminal prieks client lai redzetu savu projektu
+ node index.js
+
+# Atver jaunu terminal prieks client lai redzetu savu projektu
 
 cd savs/fails/client
 
