@@ -1,20 +1,24 @@
+require("dotenv").config(); // .env tiek ielādēts
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const db = require("../db");
 const jwt = require("jsonwebtoken");
-require("dotenv").config(); // <- pārliecinies, ka tiek ielādēts .env
+
 
 const router = express.Router();
 
-const ADMIN_CODE = process.env.ADMIN_CODE || "default_admin_code";
-const TEACHER_CODE = process.env.TEACHER_CODE || "default_teacher_code";
+const ADMIN_CODE = process.env.ADMIN_CODE || "admin123";
+const TEACHER_CODE = process.env.TEACHER_CODE || "teacher123";
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
 // === REGISTER ===
 router.post("/register", async (req, res) => {
   const { username, password, role, code } = req.body;
 
-  if (!username || !password || !role || !code) {
+  console.log("Register attempt:", { username, role, code });
+  console.log("Expected codes:", { ADMIN_CODE, TEACHER_CODE });
+
+  if (!username || !password || !role) {
     return res.status(400).json({ error: "Nepilnīgi dati reģistrācijai." });
   }
 
@@ -24,6 +28,11 @@ router.post("/register", async (req, res) => {
 
   if (role === "teacher" && code !== TEACHER_CODE) {
     return res.status(403).json({ error: "Nepareizs skolotāja kods." });
+  }
+
+  if (role === "student") {
+    // students nav nepieciešams kods
+    console.log("Student registration: OK");
   }
 
   try {

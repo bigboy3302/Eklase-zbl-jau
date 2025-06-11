@@ -6,8 +6,8 @@ const bodyParser = require("body-parser");
 const app = express();
 
 // Routes
-const studentRoutes = require("./routes/students");
-const authRoutes = require("./routes/auth");
+const studentRoutes = require("./students");
+const authRoutes = require("./auth");
 
 // Middleware
 app.use(cors());

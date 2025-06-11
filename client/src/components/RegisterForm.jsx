@@ -7,14 +7,17 @@ function RegisterForm() {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [role, setRole] = useState("teacher");
+
   const navigate = useNavigate();
+  const API_URL = process.env.REACT_APP_API_URL;
 
   const register = async (e) => {
     e.preventDefault();
-    try {
-      console.log("Sending data to backend:", { username, password, code, role });
 
-      const response = await axios.post("http://localhost:3001/auth/register", {
+    try {
+      console.log("Sending to backend:", { username, password, role, code });
+
+      const response = await axios.post(`${API_URL}/auth/register`, {
         username,
         password,
         role,
@@ -22,12 +25,11 @@ function RegisterForm() {
       });
 
       console.log("Backend response:", response.data);
-
       alert("Reģistrācija veiksmīga!");
-      navigate("/");
+      navigate("/login");
     } catch (err) {
       console.error("Reģistrācijas kļūda:", err);
-      alert(err.response?.data?.error || "Kļūda reģistrējoties");
+      alert(err.response?.data?.error || "Nezināma kļūda reģistrācijas laikā");
     }
   };
 
