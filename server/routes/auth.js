@@ -1,58 +1,75 @@
 const express = require("express");
-const router = express.Router();
+const bcrypt = require("bcryptjs");
 const db = require("../db");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+require("dotenv").config(); // <- pārliecinies, ka tiek ielādēts .env
 
-// 🔐 REGISTER
-// 🔐 REGISTER
+const router = express.Router();
+
+const ADMIN_CODE = process.env.ADMIN_CODE || "default_admin_code";
+const TEACHER_CODE = process.env.TEACHER_CODE || "default_teacher_code";
+const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+
+// === REGISTER ===
 router.post("/register", async (req, res) => {
-    const { username, password, role, code } = req.body;
-    if (!username || !password || !role) {
-      return res.status(400).json({ error: "Nepilnīgi dati" });
-    }
-  
-    // Atļaut pirmo skolotāju bez koda
-    const checkSql = "SELECT COUNT(*) AS count FROM users WHERE role = 'teacher'";
-    db.query(checkSql, async (err, result) => {
-      if (err) return res.status(500).json({ error: "Servera kļūda" });
-  
-      const teacherCount = result[0].count;
-      const validCode = "0002"; // ← šo aizvieto ar savu īsto kodu
-  
-      if (role === "teacher" && teacherCount > 0 && code !== validCode) {
-        return res.status(403).json({ error: "Nepareizs reģistrācijas kods" });
-      }
-  
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const insertSql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
-  
-      db.query(insertSql, [username, hashedPassword, role], (err, result) => {
-        if (err) {
-          if (err.code === "ER_DUP_ENTRY") return res.status(400).json({ error: "Lietotājvārds jau eksistē" });
-          return res.status(500).json({ error: "Servera kļūda" });
-        }
-        res.json({ message: "Lietotājs reģistrēts!" });
-      });
-    });
-  });
-  
-// 🔐 LOGIN
-router.post("/login", (req, res) => {
+  const { username, password, role, code } = req.body;
+
+  if (!username || !password || !role || !code) {
+    return res.status(400).json({ error: "Nepilnīgi dati reģistrācijai." });
+  }
+
+  if (role === "admin" && code !== ADMIN_CODE) {
+    return res.status(403).json({ error: "Nepareizs administrators kods." });
+  }
+
+  if (role === "teacher" && code !== TEACHER_CODE) {
+    return res.status(403).json({ error: "Nepareizs skolotāja kods." });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const [result] = await db.query(
+      "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+      [username, hashedPassword, role]
+    );
+
+    res.status(201).json({ message: "Lietotājs reģistrēts", userId: result.insertId });
+  } catch (err) {
+    console.error("DB error:", err);
+    res.status(500).json({ error: "Kļūda reģistrējot lietotāju." });
+  }
+});
+
+// === LOGIN ===
+router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const sql = "SELECT * FROM users WHERE username = ?";
 
-  db.query(sql, [username], async (err, results) => {
-    if (err) return res.status(500).json({ error: "DB kļūda" });
-    if (results.length === 0) return res.status(401).json({ error: "Nepareizs lietotājvārds" });
+  try {
+    const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
 
-    const user = results[0];
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ error: "Nepareiza parole" });
+    if (rows.length === 0) {
+      return res.status(401).json({ error: "Nepareizs lietotājvārds vai parole." });
+    }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, "slepenaatslega", { expiresIn: "1h" });
-    res.json({ token, role: user.role });
-  });
+    const user = rows[0];
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordMatch) {
+      return res.status(401).json({ error: "Nepareizs lietotājvārds vai parole." });
+    }
+
+    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
+
+    res.json({
+      message: "Veiksmīga pieteikšanās",
+      token,
+      user: { id: user.id, username: user.username, role: user.role },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Kļūda pieslēdzoties." });
+  }
 });
 
 module.exports = router;

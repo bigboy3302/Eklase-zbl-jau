@@ -5,38 +5,63 @@ import { useNavigate } from "react-router-dom";
 function RegisterForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student");
   const [code, setCode] = useState("");
+  const [role, setRole] = useState("teacher");
   const navigate = useNavigate();
 
   const register = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3001/auth/register", {
+      console.log("Sending data to backend:", { username, password, code, role });
+
+      const response = await axios.post("http://localhost:3001/auth/register", {
         username,
         password,
         role,
-        code: role === "teacher" ? code : undefined
+        code,
       });
+
+      console.log("Backend response:", response.data);
+
       alert("Reģistrācija veiksmīga!");
-      navigate("/"); // Uz login
+      navigate("/");
     } catch (err) {
-      alert(err.response?.data?.error || "Kļūda");
+      console.error("Reģistrācijas kļūda:", err);
+      alert(err.response?.data?.error || "Kļūda reģistrējoties");
     }
   };
 
   return (
     <form onSubmit={register}>
       <h2>Reģistrācija</h2>
-      <input placeholder="Lietotājvārds" onChange={(e) => setUsername(e.target.value)} required />
-      <input type="password" placeholder="Parole" onChange={(e) => setPassword(e.target.value)} required />
-      <select onChange={(e) => setRole(e.target.value)} value={role}>
-        <option value="student">Skolēns</option>
+
+      <input
+        placeholder="Lietotājvārds"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        required
+      />
+
+      <input
+        type="password"
+        placeholder="Parole"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+
+      <select value={role} onChange={(e) => setRole(e.target.value)} required>
         <option value="teacher">Skolotājs</option>
+        <option value="admin">Administrators</option>
       </select>
-      {role === "teacher" && (
-        <input placeholder="Reģistrācijas kods" onChange={(e) => setCode(e.target.value)} />
-      )}
+
+      <input
+        placeholder="Reģistrācijas kods"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        required
+      />
+
       <button type="submit">Reģistrēties</button>
     </form>
   );
