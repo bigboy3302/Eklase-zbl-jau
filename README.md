@@ -7,11 +7,11 @@ npm install
 
 # atver savu failu kur ir backend 
 
-/server/routes
+/server
 
 # atver Mysql
 
-lai konektotos ar sql
+## lai konektotos ar sql
 
 # nolade 
 
