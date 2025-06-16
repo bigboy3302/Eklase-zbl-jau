@@ -4,11 +4,11 @@ import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import AddStudent from "./pages/AddStudent";
 import Dashboard from "./pages/Dashboard";
+import ProfilePage from "./pages/ProfilePage"; // <-- jau ir importēts
 
 function App() {
-  const [user, setUser] = useState(null); // user = { role: "teacher", token: "..." }
+  const [user, setUser] = useState(null);
 
-  // Saglabā user pēc login
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
@@ -34,6 +34,7 @@ function App() {
             <>
               <span className="me-2">Lietotājs: {user.role}</span>
               <Link to="/dashboard" className="btn btn-secondary me-2">Panelis</Link>
+              <Link to="/profile" className="btn btn-secondary me-2">Profils</Link>
               {user.role === "teacher" && (
                 <Link to="/add-student" className="btn btn-primary me-2">Pievienot skolēnu</Link>
               )}
@@ -51,6 +52,7 @@ function App() {
           ) : (
             <>
               <Route path="/dashboard" element={<Dashboard user={user} />} />
+              <Route path="/profile" element={<ProfilePage userId={user.id} />} />
               {user.role === "teacher" && (
                 <Route path="/add-student" element={<AddStudent />} />
               )}

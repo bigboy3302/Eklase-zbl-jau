@@ -32,6 +32,7 @@ CREATE TABLE users (
 );
 
 
+
 CREATE TABLE notifications (
   id INT AUTO_INCREMENT PRIMARY KEY,
   student_id INT,
