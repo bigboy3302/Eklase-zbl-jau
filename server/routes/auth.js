@@ -1,3 +1,4 @@
+require("dotenv").config(); // .env tiek ielādēts
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const db = require("../db"); // db ir mysql2 connection pool

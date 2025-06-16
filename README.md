@@ -7,7 +7,7 @@ npm install
 
 # atver savu failu kur ir backend 
 
-/server
+/server/routes
 
 # atver Mysql
 
