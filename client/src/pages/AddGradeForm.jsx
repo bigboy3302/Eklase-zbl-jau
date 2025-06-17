@@ -20,7 +20,7 @@ function AddGradeForm({ studentId, onClose, onGradeAdded }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3001/grades/add", {
+      await axios.post("http://localhost:3001/grade/add", {
         student_id: studentId,
         subject,
         grade: parseInt(grade)

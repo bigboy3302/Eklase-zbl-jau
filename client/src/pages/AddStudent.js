@@ -1,55 +1,53 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 
-function AddStudent() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [message, setMessage] = useState('');
+export default function AddStudent() {
+  const [first, setFirst] = useState("");
+  const [last, setLast] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:3001/students/add", {
-        first_name: firstName,
-        last_name: lastName,
+      await axios.post("http://localhost:3001/students/add", {
+        first_name: first,
+        last_name: last,
+        username,
+        password,
       });
-      setMessage(res.data.message);
-      setFirstName('');
-      setLastName('');
+      alert("Skolēns izveidots!");
+      setFirst(""); setLast(""); setUsername(""); setPassword("");
     } catch (err) {
-      setMessage("Kļūda: " + (err.response?.data?.message || "Nezināma"));
+      console.error("❌ Kļūda pievienojot:", err.response?.data);
+      alert(err.response?.data?.error || "Nezināma kļūda");
     }
   };
 
   return (
-    <div className="container mt-5">
-      <h2>Pievienot skolēnu</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Vārds</label>
-          <input
-            type="text"
-            className="form-control"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Uzvārds</label>
-          <input
-            type="text"
-            className="form-control"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">Pievienot</button>
-        {message && <div className="alert alert-info mt-3">{message}</div>}
-      </form>
-    </div>
+    <form onSubmit={handleAdd}>
+      <input
+        placeholder="Vārds"
+        value={first}
+        onChange={(e) => setFirst(e.target.value)}
+        required />
+      <input
+        placeholder="Uzvārds"
+        value={last}
+        onChange={(e) => setLast(e.target.value)}
+        required />
+      <input
+        placeholder="Lietotājvārds (login)"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        required />
+      <input
+        type="password"
+        placeholder="Parole"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required />
+      <button type="submit">Pievienot skolēnu</button>
+    </form>
   );
 }
-
-export default AddStudent;

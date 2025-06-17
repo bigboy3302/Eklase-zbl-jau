@@ -2,17 +2,17 @@ const mysql = require("mysql");
 
 const db = mysql.createConnection({
   host: "localhost",
-  user: "root", // vai cits lietotājs
-  password: "", // parole, ja ir
-  database: "grade_viewer" // aizvieto ar savu datubāzes nosaukumu
+  user: "root",
+  password: "root",
+  database: "grade_viewer",
 });
 
 db.connect((err) => {
   if (err) {
-    console.error("❌ Kļūda pieslēdzoties DB:", err);
-  } else {
-    console.log("🟢 Savienojums ar MySQL izdevās!");
+    console.error("DB savienojuma kļūda:", err);
+    process.exit(1);
   }
+  console.log("✅ Savienojums ar DB izveidots");
 });
 
 module.exports = db;

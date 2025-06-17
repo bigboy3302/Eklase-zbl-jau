@@ -9,45 +9,24 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
 // === REGISTER ===
-router.post("/register", (req, res) => {
+router.post("/register", async (req, res) => {
   const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: "Obligāti jāievada username un password" });
 
-  if (!username || !password) {
-    return res.status(400).json({ error: "Nepieciešams lietotājvārds un parole." });
-  }
-
-  db.query("SELECT id FROM users WHERE username = ?", [username], (err, results) => {
-    if (err) {
-      console.error("DB select error:", err);
-      return res.status(500).json({ error: "Kļūda datubāzē." });
-    }
-
-    if (results.length > 0) {
-      return res.status(409).json({ error: "Lietotājvārds jau aizņemts." });
-    }
-
-    bcrypt.hash(password, 10, (err, hashedPassword) => {
-      if (err) {
-        console.error("Hashing error:", err);
-        return res.status(500).json({ error: "Kļūda šifrējot paroli." });
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    db.query(
+      "INSERT INTO users (username, password, role) VALUES (?, ?, 'student')",
+      [username, hashedPassword],
+      (err, result) => {
+        if (err) return res.status(500).json({ error: "Neizdevās reģistrēt lietotāju" });
+        res.status(201).json({ message: "Reģistrācija veiksmīga" });
       }
-
-      db.query(
-        "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-        [username, hashedPassword, "student"],
-        (err, result) => {
-          if (err) {
-            console.error("DB insert error:", err);
-            return res.status(500).json({ error: "Kļūda reģistrējot lietotāju." });
-          }
-
-          res.status(201).json({ message: "Reģistrācija veiksmīga", userId: result.insertId });
-        }
-      );
-    });
-  });
+    );
+  } catch (err) {
+    res.status(500).json({ error: "Servera kļūda" });
+  }
 });
-
 // === LOGIN ===
 router.post("/login", (req, res) => {
   const { username, password } = req.body;

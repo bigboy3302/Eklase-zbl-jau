@@ -1,73 +1,83 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
 
 function ProfilePage({ userId }) {
-  const [birthYear, setBirthYear] = useState("");
   const [password, setPassword] = useState("");
-  const [avatar, setAvatar] = useState(null);
-  const [message, setMessage] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await axios.get(`http://localhost:3001/users/${userId}`);
-      } catch (err) {
-        console.error("Kļūda ielādējot profilu:", err);
-      }
-    };
-    fetchProfile();
+    axios.get(`http://localhost:3001/profile/${userId}`)
+      .then(res => {
+        setBirthYear(res.data.birth_year || "");
+        setAvatarUrl(res.data.avatar || "");
+      })
+      .catch(err => console.error("Kļūda ielādējot profilu:", err));
   }, [userId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    if (password) formData.append("password", password);
-    if (avatar) formData.append("avatar", avatar);
 
     try {
-      await axios.put(`http://localhost:3001/users/${userId}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
+      await axios.put(`http://localhost:3001/profile/${userId}`, {
+        password,
+        birth_year: birthYear,
+        avatar_url: avatarUrl,
       });
-      setMessage("✅ Profils atjaunināts veiksmīgi!");
+
+      alert("✅ Profils saglabāts!");
+      setPassword("");
     } catch (err) {
-      console.error("Kļūda saglabājot profilu:", err);
-      setMessage("❌ Kļūda saglabājot datus");
+      console.error("❌ Kļūda saglabājot profilu:", err);
+      alert("Neizdevās saglabāt");
     }
   };
 
   return (
     <div className="container mt-4">
-      <Link to="/dashboard" className="btn btn-secondary mb-3">
-        🔙 Atpakaļ uz paneli
-      </Link>
       <h2>👤 Profils</h2>
-      {message && <p>{message}</p>}
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
+
+      <div className="mb-3">
+        <img
+          src={avatarUrl || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}
+          alt="Avatar"
+          style={{ width: "120px", height: "120px", borderRadius: "50%", objectFit: "cover" }}
+        />
+      </div>
+
+      <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label className="form-label">Jauna parole:</label>
+          <label>Dzimšanas gads:</label>
+          <input
+            type="number"
+            className="form-control"
+            value={birthYear}
+            onChange={(e) => setBirthYear(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label>Jauna parole:</label>
           <input
             type="password"
             className="form-control"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Ievadi jauno paroli"
           />
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Augšupielādēt avataru:</label>
+          <label>Profila attēla saite (URL):</label>
           <input
-            type="file"
+            type="text"
             className="form-control"
-            accept="image/*"
-            onChange={(e) => setAvatar(e.target.files[0])}
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="https://..."
           />
         </div>
 
-        <button type="submit" className="btn btn-primary">
-          💾 Saglabāt izmaiņas
-        </button>
+        <button type="submit" className="btn btn-primary">💾 Saglabāt</button>
       </form>
     </div>
   );

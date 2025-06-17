@@ -28,8 +28,11 @@ CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
-  role ENUM('admin', 'teacher', 'student') NOT NULL
+  role ENUM('admin', 'teacher', 'student') NOT NULL DEFAULT 'student'
+  ALTER TABLE users ADD avatar VARCHAR(255);
+
 );
+
 
 
 

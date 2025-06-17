@@ -1,35 +1,25 @@
 const express = require("express");
 const cors = require("cors");
-const app = express();
-const port = 3001;
+const authRoutes = require("./routes/auth");
+const studentRoutes = require("./routes/students");
+const gradesRoutes = require("./routes/grades");  // Šis vajadzīgs
+const db = require("./db");
 
-// Viduslānis (middleware)
-app.use(cors());
+const app = express();
+
+app.use(cors({
+  origin: "http://localhost:3000",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
+
 app.use(express.json());
 
-// MySQL pieslēgums
-const db = require("./db");
-const profileRoutes = require("./routes/profile");
-app.use("/profile", profileRoutes);
-app.use("/avatars", express.static("uploads/avatars"));
+app.use("/auth", authRoutes);
+app.use("/students", studentRoutes);
+app.use("/grades", gradesRoutes);   // Pievieno šeit
 
-// Importē un lieto maršrutus
-const gradesRoute = require("./routes/grades");
-app.use("/grades", gradesRoute);
-
-// (Nepieciešams arī students, users utt. maršrutiem)
-const studentsRoute = require("./routes/students");
-app.use("/students", studentsRoute);
-
-const authRoute = require("./routes/auth");
-app.use("/auth", authRoute);
-
-// Saknes maršruts
-app.get("/", (req, res) => {
-  res.send("✅ Serveris darbojas!");
-});
-
-// Startē serveri
-app.listen(port, () => {
-  console.log(`🚀 Serveris darbojas: http://localhost:${port}`);
+const PORT = 3001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
